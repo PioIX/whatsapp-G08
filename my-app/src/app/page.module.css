@@ -12,8 +12,7 @@
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-around;
   height: 100vh;
   background-color: #e5ddd5; 
 }

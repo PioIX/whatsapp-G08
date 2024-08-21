@@ -1,13 +1,15 @@
 "use client"
 
-import Header from "@/components/Header"
+import styles from "@/app/page.module.css"
 import Title from "@/components/Title"
-import styles from '@/app/page.module.css';
 
 export default function Home() {
     return(
-        <>
-            <Title text={"Whatsapp"}/>
-        </>
+        <main className={styles.body}>
+            <Title sofi={"Whatsapp"}/>
+        </main>
+                
+                     
+        
     )
 }

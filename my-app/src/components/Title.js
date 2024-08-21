@@ -2,8 +2,8 @@
 
 import styles from './page.module.css';
 
-export default function Title({text}){
+export default function Title({sofi}){
   return (
-    <header className={styles.titulo}>{text}</header>
+    <header className={styles.titulo}>{sofi}</header>
   );
 };

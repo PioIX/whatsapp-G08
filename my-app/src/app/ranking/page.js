@@ -1,5 +1,5 @@
 "use client"
-import Button from "@/components/button"
+import Button from "@/components/Button"
 
 //Componente FUNCTIONAL
 export default function Ranking() {

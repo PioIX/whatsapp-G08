@@ -1,0 +1,3 @@
+para el fondo en vez de header hacer una foto de como queremos que sea el fondo y
+arriba de eso hacemos el div con el sidebar y chat 
+onichan

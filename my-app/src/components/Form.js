@@ -1,5 +1,5 @@
 import Button from "./Header";
-import Title from "./Button";
+import Title from "./button";
 
 export default function Form(text, textBtn1, textBtn2) {
     return(

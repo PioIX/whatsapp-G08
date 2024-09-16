@@ -13,7 +13,6 @@ export default function Home() {
             <div className={styles.body}>
                 <header className={styles.head}></header>
                 <div>
-                    <input>Alo</input>
                 </div>
             </div>
         </main>

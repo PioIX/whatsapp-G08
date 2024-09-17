@@ -11,8 +11,10 @@ export default function Home() {
     return(
         <main>
             <div className={styles.body}>
-                <header className={styles.head}></header>
-                <div>
+                <div className={styles.Sidebar}>
+                </div>
+                <div className={styles.chat}>
+
                 </div>
             </div>
         </main>

@@ -1,9 +1,5 @@
 "use client"
 
-// !!!!!!!
-// esta pagina no es la del chat, la del chat es /whatsapp
-// !!!!!!!
-
 import styles from "@/app/page.module.css"
 import Sidebar from "@/components/Sidebar"
 import Title from "@/components/Title"

@@ -21,7 +21,7 @@ export default function Login() {
 
                 <div className="form-outline mb-4">
                   <input type="password" id="typePasswordX-2" className="form-control form-control-lg" />
-                  <label className="form-label" htmlFor="typePasswordX-2">Contrasena</label>
+                  <label className="form-label" htmlFor="typePasswordX-2">Contraseña</label>
                 </div>
 
                 <button className="btn btn-success btn-lg btn-block" type="submit">Login</button>   

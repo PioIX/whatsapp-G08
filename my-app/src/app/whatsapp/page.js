@@ -1,4 +1,5 @@
 "use client"
+//pantalla true
 
 import styles from "@/app/page.module.css"
 import Sidebar from "@/components/Sidebar"

@@ -8,7 +8,7 @@ const useSocket = (options = { withCredentials: false }, serverUrl = "ws://10.1.
   useEffect(() => {
     // Crear una conexión con el backend usando Socket.IO
     const socketIo = io(serverUrl, options);
-
+    
     // Actualizar el estado de la conexión
     socketIo.on('connect', () => {
       setIsConnected(true);

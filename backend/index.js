@@ -13,11 +13,13 @@ const express = require('express');						// Para el manejo del web server
 const bodyParser = require('body-parser'); 				// Para el manejo de los strings JSON
 const MySQL = require('./modulos/mysql');				// Añado el archivo mysql.js presente en la carpeta módulos
 const session = require('express-session');				// Para el manejo de las variables de sesión
+const cors = require('cors')
 
 const app = express();									// Inicializo express para el manejo de las peticiones
 
 app.use(bodyParser.urlencoded({ extended: false }));	// Inicializo el parser JSON
 app.use(bodyParser.json());
+app.use(cors())
 
 const LISTEN_PORT = 4000;								// Puerto por el que estoy ejecutando la página Web
 
@@ -70,14 +72,16 @@ app.delete('/login', (req, res) => {
 	res.send(null);
 });
 
-app.get('/NombreGet', function(req,res){
+app.get('/NombreGet', async function(req,res){
     console.log(req.query) 
-    res.send({respuesta: `Respuesta del Backend`})
+	const respuesta = await MySQL.realizarQuery(`SELECT Nombre FROM Usuarios`)
+    res.send(respuesta)
 })
 
-app.get('/ContraseñaGet', function(req,res){
+app.get('/ContraseñaGet', async function(req,res){
     console.log(req.query) 
-    res.send({respuesta: `Respuesta del Backend`})
+	const respuesta = await MySQL.realizarQuery(`SELECT Contraseña FROM Usuarios`)
+    res.send(respuesta)
 })
 
 app.post('/NombrePost', function(req,res) {

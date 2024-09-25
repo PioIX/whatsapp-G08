@@ -1,95 +1,145 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-//pagina verdadera
-export default function Home() {
+"use client";
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@/app/chat/fetch'
+
+export default function Login() {
+
+  async function GetNombre() {
+    //Llamo a un pedido Get del servidor
+    const response = await fetch('http://localhost:4000/NombreGet',{
+        method:"GET",
+        headers: {
+            "Content-Type": "application/json",
+          },
+    })
+
+    console.log(response)
+    const result = await response.json()
+    console.log(result)
+
+    //document.getElementById("mail").innerHTML = result.respuesta
+  }
+
+  async function GetContraseña() {
+    //Llamo a un pedido Get del servidor
+    const response = await fetch('http://localhost:4000/ContraseñaGet',{
+        method:"GET",
+        headers: {
+            "Content-Type": "application/json",
+          },
+    })
+
+    console.log(response)
+    const result = await response.json()
+    console.log(result)
+
+    //document.getElementById("password").innerHTML = result.respuesta
+}
+
+  async function login() {
+    let user = getNombre();
+    let password = GetContraseña();
+
+    let usuariosExistentes = await usuariosDB();
+
+    for (let i = 0; i < usuariosExistentes.length; i++) {
+      if (usuariosExistentes[i].nombre == user) {
+        if (usuariosExistentes[i].password == password) {
+          usuarioLogueadoId = usuariosExistentes[i].id_usuario;
+          changeScreen();
+          return; // Salir de la función después de un inicio de sesión exitoso
+        } else {
+          alert("La contraseña es incorrecta");
+          return; // Salir de la función después de un error de contraseña
+        }
+      }
+    }
+    // Si ningún usuario coincide, muestra el mensaje de error
+    alert("Ese usuario no existe. Inicie el registro");
+  }
+
+  async function registro() {
+    let usuariosExistentes = await usuariosDB();
+    let user = getNombre();
+    let password = GetContraseña();
+  
+    // Verificar si el usuario ya existe
+    for (let i = 0; i < usuariosExistentes.length; i++) {
+      if (user == usuariosExistentes[i].user) {
+        alert("Este usuario ya existe. Aprete el boton ingresar");
+        return;
+      }
+    }
+  
+    // Si no existe, registrar nuevo usuario
+    let operacion = await registroUsuarios(user, password);
+  
+    if (operacion === true) {
+      let usuariosExistentesActual = await usuariosDB();
+      usuarioLogueadoId = usuariosExistentesActual[usuariosExistentesActual.length - 1].id_usuario;
+      changeScreen();
+    } else {
+      alert("Hubo un error en el ingreso de datos");
+    }
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <section className="vh-100" style={{ backgroundColor: '#075E54' }}>
+      <div className="container py-5 h-100">
+        <div className="row d-flex justify-content-center align-items-center h-100">
+          <div className="col-12 col-md-8 col-lg-6 col-xl-5">
+            <div className="card shadow-2-strong" style={{ borderRadius: '1rem' }}>
+              <div className="card-body p-5 text-center">
+
+                <h3 className="mb-5">Log in</h3>
+
+                <div className="form-outline mb-4">
+                  <input type="email" id="mail" className="form-control form-control-lg" />
+                  <label className="form-label" htmlFor="typeEmailX-2">Nombre</label>
+                </div>
+
+                <div className="form-outline mb-4">
+                  <input type="password" id="contrasena" className="form-control form-control-lg" />
+                  <label className="form-label" htmlFor="typePasswordX-2">Contraseña</label>
+                </div>
+
+                <button className="btn btn-success btn-lg btn-block" type="submit" style={{margin: '10px'}} onclick={login}>Login</button>
+                <button className="btn btn-success btn-lg btn-block" type="submit" onclick={registro}>Registrarse</button>
+                <button type="submit" onClick={GetContraseña}></button>
+
+                <hr className="my-4" />
+
+
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </section>
   );
 }
+
+
+
+// cosas 
+
+/** esto va en el layout
+ * async function botonLogOut() {
+    usuarioLogueadoId = 0
+    screenLogin()   
+    document.getElementById("username").value = ""
+    document.getElementById("password").value = ""
+    localStorage.clear();
+    location.href = "index.html";
+}
+
+async function botonLogOutAdmin () {
+    usuarioLogueadoId = 0
+    changeScreenAdmin() 
+    document.getElementById("username").value = ""
+    document.getElementById("password").value = ""
+    document.getElementById("dni").value = ""
+}
+ */

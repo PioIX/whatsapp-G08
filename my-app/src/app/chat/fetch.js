@@ -1,6 +1,6 @@
 async function GetNombre() {
     //Llamo a un pedido Get del servidor
-    const response = await fetch('http://localhost:3000/NombreGet',{
+    const response = await fetch('http://localhost:4000/NombreGet',{
         method:"GET",
         headers: {
             "Content-Type": "application/json",
@@ -9,9 +9,9 @@ async function GetNombre() {
 
     console.log(response)
     const result = await response.json()
-    console.log(result)
+    console.log(result, "ok")
 
-    document.getElementById("email").innerHTML = result.respuesta
+    //document.getElementById("mail").innerHTML = result.respuesta
 }
 async function GetContraseña() {
     //Llamo a un pedido Get del servidor
@@ -61,4 +61,37 @@ async function postContraseña() {
         body:JSON.stringify(data),
     })
 
+}
+
+async function usuariosDB() {
+    //Llamo a un pedido Get del servidor
+    const response = await fetch('http://localhost:4000/usuarios',{
+        method:"GET",
+        headers: {
+            "Content-Type": "application/json",
+          },
+    })
+
+    console.log(response)
+    const datos = await response.json() 
+    return(datos)
+}
+
+async function registroUsuarios() {
+    //Armo un objeto para mandarlo como formato JSON
+    const data = {
+        nombre: getUsuario(),
+        password: getPassword(),
+        dni: getDni()
+    }
+
+    //Envio un pedido POST con un JSON en el body
+    const response = await fetch('http://localhost:4000/registrarUsuarios',{
+        method:"POST",
+        headers: {
+            "Content-Type": "application/json",
+          },
+        body:JSON.stringify(data),
+    })
+    return true
 }

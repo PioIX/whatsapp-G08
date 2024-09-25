@@ -109,3 +109,7 @@ a {
 .fw-bold {
   color: #075E54; /* Verde claro de WhatsApp */
 }
+
+.btn btn-success btn-lg btn-block {
+  margin: 20px;
+}

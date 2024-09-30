@@ -105,8 +105,8 @@ export default function Login() {
                   <label className="form-label" htmlFor="typePasswordX-2">Contraseña</label>
                 </div>
 
-                <button className="btn btn-success btn-lg btn-block" type="submit" style={{margin: '10px'}} onclick={login}>Login</button>
-                <button className="btn btn-success btn-lg btn-block" type="submit" onclick={registro}>Registrarse</button>
+                <button className="btn btn-success btn-lg btn-block" type="submit" style={{margin: '10px'}} onClick={login}>Login</button>
+                <button className="btn btn-success btn-lg btn-block" type="submit" onClick={registro}>Registrarse</button>
                 <button type="submit" onClick={GetContraseña}></button>
 
                 <hr className="my-4" />

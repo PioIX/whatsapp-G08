@@ -112,3 +112,15 @@ app.get('/ContraseñaGet', async (req, res) => {
 		res.status(500).send({ error: 'Error interno del servidor' });
 	}
 });
+
+
+app.get('/GetChats', async (req, res) => {
+	try {
+		const respuesta = await MySQL.realizarQuery(`SELECT idchats FROM Chats `);
+		res.send(respuesta);
+	} catch (error) {
+		console.error("Error en GetChats: ", error);
+		res.status(500).send({ error: 'Error interno del servidor' });
+	}
+});
+

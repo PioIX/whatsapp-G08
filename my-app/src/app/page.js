@@ -1,18 +1,29 @@
 "use client";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useEffect, useState } from 'react';
 
 export default function Login() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Verificar si hay un usuario guardado en localStorage
+    const loggedUser = localStorage.getItem('user');
+    console.log("Valor de user:", user);
+    if (loggedUser) {
+      setUser(loggedUser);
+    }
+  }, [user]);
+
   async function login() {
     const username = document.getElementById("mail").value;
     const password = document.getElementById("contrasena").value;
-  
+
     if (!username || !password) {
       alert("Por favor llena ambos campos.");
       return;
     }
-  
+
     try {
       const response = await fetch('http://localhost:4000/login', {
         method: "POST",
@@ -21,12 +32,13 @@ export default function Login() {
         },
         body: JSON.stringify({ username, password }),
       });
-  
+
       if (response.ok) {
         const result = await response.json();
-        console.log(result);
-        // Redirigir a /whatsapp
-        window.location.href = '/whatsapp';
+        console.log(result)
+        setUser(result.ID_Usuario); // Guardar el usuario en el estado
+        localStorage.setItem('user', result.ID_Usuario); // Guardar en localStorage
+        //window.location.href = '/whatsapp'; 
       } else {
         const error = await response.json();
         alert(error.error);
@@ -35,7 +47,6 @@ export default function Login() {
       console.error("Error en login: ", error);
     }
   }
-  
 
   async function registro() {
     const username = document.getElementById("mail").value;

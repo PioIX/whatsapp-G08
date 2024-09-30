@@ -56,6 +56,20 @@ export default function Home() {
       socket.emit('send_message', messageData); // Envía el mensaje al servidor
       setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado
       setInputMessage(''); // Limpia el campo de entrada
+  
+      // Envía una solicitud al servidor para guardar el mensaje en la base de datos
+      fetch('http://localhost:4000/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          mensaje: inputMessage
+        })
+      })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
     } else {
       console.error("El ID del usuario o el mensaje de entrada son inválidos."); // Para depuración
     }

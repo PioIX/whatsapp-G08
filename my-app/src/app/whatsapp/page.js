@@ -1,15 +1,49 @@
-"use client"
-//pantalla true
+"use client";
 
-import styles from "@/app/page.module.css"
-import Sidebar from "@/components/Sidebar"
-import Title from "@/components/Title"
-import React from 'react';
+// Importar módulos y estilos necesarios
+import styles from "@/app/page.module.css";
+import Sidebar from "@/components/Sidebar"; // Asegúrate de que el componente Sidebar está definido
+import Title from "@/components/Title"; // Asegúrate de que el componente Title está definido
+import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client'; // Importa Socket.io client
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+
+// Conectar al servidor Socket.io
+const socket = io('http://localhost:4000');
+
 export default function Home() {
+  const [messages, setMessages] = useState([]); // Estado para almacenar mensajes
+  const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
 
+  useEffect(() => {
+    // Escuchar el evento de recibir mensaje
+    socket.on('receive_message', (data) => {
+      const receivedMessage = {
+        ...data,
+        sent: false, // Este mensaje fue recibido por otro usuario
+      };
+      setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+    });
 
+    return () => {
+      socket.off('receive_message'); // Limpiar el listener al desmontar
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (inputMessage) {
+      const messageData = {
+        avatar: 'ava1-bg.webp', // Cambia esto según el usuario
+        message: inputMessage,
+        time: new Date().toLocaleTimeString(), // Hora actual
+        sent: true, // Este mensaje fue enviado por el usuario
+      };
+      socket.emit('send_message', messageData); // Envía el mensaje al servidor
+      setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado
+      setInputMessage(''); // Limpia el campo de entrada
+    }
+  };
 
   return (
     <section style={{ backgroundColor: '#075E54' }}>
@@ -21,6 +55,7 @@ export default function Home() {
                 <div className="row">
                   <div className="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
                     <div className="p-3">
+                      {/* Tu código de búsqueda y lista de chats */}
                       <div className="input-group rounded mb-3">
                         <input
                           type="search"
@@ -35,50 +70,7 @@ export default function Home() {
                       </div>
                       <div style={{ position: 'relative', height: '400px', overflowY: 'auto' }}>
                         <ul className="list-unstyled mb-0">
-                          {/* Sample Chat List */}
-                          {[
-                            {
-                              name: 'Marie Horwitz',
-                              message: 'Hello, Are you there?',
-                              time: 'Just now',
-                              avatar: 'ava1-bg.webp',
-                              unread: 3,
-                            },
-                            {
-                              name: 'Alexa Chung',
-                              message: 'Lorem ipsum dolor sit.',
-                              time: '5 mins ago',
-                              avatar: 'ava2-bg.webp',
-                              unread: 2,
-                            },
-                            // Add more chat items here...
-                          ].map((chat, index) => (
-                            <li className="p-2 border-bottom" key={index}>
-                              <a href="#!" className="d-flex justify-content-between">
-                                <div className="d-flex flex-row">
-                                  <div>
-                                    <img
-                                      src={`https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/${chat.avatar}`}
-                                      alt="avatar"
-                                      className="d-flex align-self-center me-3"
-                                      width="60"
-                                    />
-                                    <span className={`badge ${chat.unread > 0 ? 'bg-danger' : 'bg-success'} badge-dot`}></span>
-                                  </div>
-                                  <div className="pt-1">
-                                    <p className="fw-bold mb-0">{chat.name}</p>
-                                    <p className="small text-muted">{chat.message}</p>
-                                  </div>
-                                </div>
-                                <div className="pt-1">
-                                  <p className="small text-muted mb-1">{chat.time}</p>
-                                  {chat.unread > 0 && (
-                                    <span className="badge bg-danger rounded-pill float-end">{chat.unread}</span>
-                                  )}
-                                </div>
-                              </a>
-                            </li>
-                          ))}
+                          {/* Lista de chats aquí... */}
                         </ul>
                       </div>
                     </div>
@@ -86,22 +78,8 @@ export default function Home() {
 
                   <div className="col-md-6 col-lg-7 col-xl-8">
                     <div className="pt-3 pe-3" style={{ position: 'relative', height: '400px', overflowY: 'auto' }}>
-                      {/* Sample Chat Messages */}
-                      {[
-                        {
-                          avatar: 'ava6-bg.webp',
-                          message: 'Hola bro',
-                          time: '12:00 PM | Aug 13',
-                          sent: false,
-                        },
-                        {
-                          avatar: 'ava1-bg.webp',
-                          message: 'Hola yanfri',
-                          time: '12:00 PM | Aug 13',
-                          sent: true,
-                        },
-                        // Add more messages here...
-                      ].map((msg, index) => (
+                      {/* Muestra los mensajes */}
+                      {messages.map((msg, index) => (
                         <div className={`d-flex flex-row justify-content-${msg.sent ? 'end' : 'start'}`} key={index}>
                           {!msg.sent && (
                             <img
@@ -132,17 +110,20 @@ export default function Home() {
                     <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
                       <img
                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlHTQ4hE8DvEq00WWWeHZJxs9IOKteXl60-w&s"
-                        alt="avatar 3"
-                        style={{ width: '40px', height: '100%' }}
+                        alt="avatar"
+                        style={{ width: '45px', height: '100%' }}
                       />
                       <input
                         type="text"
                         className="form-control form-control-lg"
-                        placeholder="Type message"
+                        placeholder="Escribe un mensaje..."
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                       />
-                      <a className="ms-1 text-muted" href="#!"><i className="fas fa-paperclip"></i></a>
-                      <a className="ms-3 text-muted" href="#!"><i className="fas fa-smile"></i></a>
-                      <a className="ms-3" href="#!"><i className="fas fa-paper-plane"></i></a>
+                      <button className="btn btn-primary" onClick={sendMessage}>
+                        Enviar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -152,5 +133,5 @@ export default function Home() {
         </div>
       </div>
     </section>
-  )
+  );
 }

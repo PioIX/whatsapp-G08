@@ -2,8 +2,12 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useLogin } from '@/hooks/useLogin';
+import { useEffect } from 'react';
 
 export default function Login() {
+  const [idUser, setIdUser] = useLogin()
+
   async function login() {
     const username = document.getElementById("mail").value;
     const password = document.getElementById("contrasena").value;
@@ -25,8 +29,9 @@ export default function Login() {
       if (response.ok) {
         const result = await response.json();
         console.log(result);
+        console.log(result.user[0].ID_Usuario)
+        setIdUser(result.user[0].ID_Usuario)
         // Redirigir a /whatsapp
-        window.location.href = '/whatsapp';
       } else {
         const error = await response.json();
         alert(error.error);
@@ -35,6 +40,13 @@ export default function Login() {
       console.error("Error en login: ", error);
     }
   }
+
+  useEffect(() => {
+    if (idUser) {
+      console.log('ID del usuario actualizado:', idUser);
+      window.location.href = '/whatsapp';
+    }
+  }, [idUser]);
   
 
   async function registro() {

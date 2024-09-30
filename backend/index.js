@@ -25,8 +25,8 @@ const io = require('socket.io')(server, {
 
 const sessionMiddleware = session({
     secret: "supersarasa",
-    resave: false,
-    saveUninitialized: false
+    resave: true,
+    saveUninitialized: true
 });
 
 app.use(sessionMiddleware);
@@ -57,7 +57,9 @@ app.post('/login', async (req, res) => {
         const query = `SELECT * FROM Usuarios WHERE Nombre = '${username}' AND Contraseña = '${password}'`;
 
         const resultado = await MySQL.realizarQuery(query);
-
+        console.log(resultado)
+        req.session.userId = resultado.ID_Usuario;
+        console.log(req.session.userId)
         if (resultado.length > 0) {
             res.status(200).json({ message: "Login exitoso", user: resultado });
         } else {
@@ -111,6 +113,16 @@ app.get('/NombreGet', async (req, res) => {
     }
 });
 
+app.get('/UserIdGet', async (req, res) => {
+    try {
+        console.log(`User: ${req.session.userId}`)
+        res.send({id: req.session.userId});
+    } catch (error) {
+        console.error("Error en UserIdGet: ", error);
+        res.status(500).send({ error: 'Error interno del servidor' });
+    }
+});
+
 app.get('/ContraseñaGet', async (req, res) => {
     try {
         const respuesta = await MySQL.realizarQuery(`SELECT Contraseña FROM Usuarios`);
@@ -150,7 +162,7 @@ app.get('/chats', async (req, res) => {
 });
 
 // Ruta para enviar mensajes
-/*app.post('/send-message', async (req, res) => {
+app.post('/send-message', async (req, res) => {
 	const { idchats, mensaje } = req.body;
 
 	try {
@@ -168,34 +180,7 @@ app.get('/chats', async (req, res) => {
 		console.error("Error en enviar mensaje: ", error);
 		res.status(500).json({ error: "Error interno del servidor" });
 	}
-});*/
-app.post('/send-message', async (req, res) => {
-    console.log('Datos enviados:', req.body);
-    const { idchats, mensaje } = req.body;
-  
-    if (!idchats || !mensaje) {
-        return res.status(400).json({ error: "Faltan datos" });
-    }
-
-    const safeMessage = mensaje.replace(/'/g, "''");
-
-    try {
-        const sql = `INSERT INTO Mensajes (idchats, mensaje) VALUES (${idchats}, '${safeMessage}')`;
-        const resultado = await MySQL.realizarQuery(sql);
-
-        if (resultado.affectedRows > 0) {
-            res.status(201).json({ message: "Mensaje enviado" });
-            io.emit('new-message', { idchats, mensaje: safeMessage });
-        } else {
-            res.status(500).json({ error: "Error al enviar el mensaje" });
-        }
-    } catch (error) {
-        console.error("Error en enviar mensaje: ", error);
-        res.status(500).json({ error: "Error interno del servidor" });
-    }
 });
-
-
 
 // obtener mensajes de un chat específico
 app.get('/chat/:idchats', async (req, res) => {

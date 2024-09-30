@@ -1,13 +1,13 @@
 "use client";
 
-// Importar módulos y estilos necesarios
 import styles from "@/app/page.module.css";
-import Sidebar from "@/components/Sidebar"; // Asegúrate de que el componente Sidebar está definido
-import Title from "@/components/Title"; // Asegúrate de que el componente Title está definido
+import Sidebar from "@/components/Sidebar"; 
+import Title from "@/components/Title"; 
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client'; // Importa Socket.io client
+import io from 'socket.io-client'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useLogin } from "@/hooks/useLogin";
 
 // Conectar al servidor Socket.io
 const socket = io('http://localhost:4000');
@@ -15,15 +15,21 @@ const socket = io('http://localhost:4000');
 export default function Home() {
   const [messages, setMessages] = useState([]); // Estado para almacenar mensajes
   const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
+  const [idUser, setIdUser] = useLogin()
+
 
   useEffect(() => {
     // Escuchar el evento de recibir mensaje
     socket.on('receive_message', (data) => {
       const receivedMessage = {
         ...data,
-        sent: false, // Este mensaje fue recibido por otro usuario
+        sent: false
       };
-      setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      console.log({receivedMessage})
+      console.log(`idUser; ${idUser}`)
+      if (idUser != receivedMessage.userID) {
+        setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      }
     });
 
     return () => {
@@ -37,7 +43,8 @@ export default function Home() {
         avatar: 'ava1-bg.webp', // Cambia esto según el usuario
         message: inputMessage,
         time: new Date().toLocaleTimeString(), // Hora actual
-        sent: true, // Este mensaje fue enviado por el usuario
+        sent: true,
+        userID: idUser
       };
       socket.emit('send_message', messageData); // Envía el mensaje al servidor
       setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado

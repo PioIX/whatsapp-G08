@@ -1,9 +1,14 @@
-import { useAuth } from "@/app/context/AuthContext"
+/*
+"use client"
 
-const useLogin = () =>{
-    const [idUser, setIdUser] = useAuth()
+import { useAuth } from "@/contexto/AuthContext";
 
-    return [idUser, setIdUser]
-}
+const useLogin = () => {
+    const [idUser, setIdUser] = useAuth();
+    console.log("useLogin - idUser:", idUser);  // Verifica que el hook obtiene el valor correcto
+    return [idUser, setIdUser];
+};
 
-export { useLogin }
+export { useLogin };
+
+*/

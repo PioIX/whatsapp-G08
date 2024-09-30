@@ -1,8 +1,5 @@
 "use client";
 
-import styles from "@/app/page.module.css";
-import Sidebar from "@/components/Sidebar"; 
-import Title from "@/components/Title"; 
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -15,19 +12,25 @@ const socket = io('http://localhost:4000');
 export default function Home() {
   const [messages, setMessages] = useState([]); // Estado para almacenar mensajes
   const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
-  const [idUser, setIdUser] = useLogin()
+  const [idUser, setIdUser] = useLogin();  // Obtén idUser del hook
 
+  // Agrega un console.log para verificar el valor de idUser en el componente
+  console.log("Componente Home - idUser:", idUser);
 
+  // Escucha de mensajes entrantes
   useEffect(() => {
-    // Escuchar el evento de recibir mensaje
+    if (!idUser) return; // Si idUser es null o undefined, no hacemos nada
+
     socket.on('receive_message', (data) => {
       const receivedMessage = {
         ...data,
         sent: false
       };
-      console.log({receivedMessage})
-      console.log(`idUser; ${idUser}`)
-      if (idUser != receivedMessage.userID) {
+      console.log({ receivedMessage });
+      console.log(`idUser en useEffect: ${idUser}`);
+      
+      // Si el mensaje recibido no es del usuario actual
+      if (idUser !== receivedMessage.userID) {
         setMessages((prevMessages) => [...prevMessages, receivedMessage]);
       }
     });
@@ -35,8 +38,9 @@ export default function Home() {
     return () => {
       socket.off('receive_message'); // Limpiar el listener al desmontar
     };
-  }, []);
+  }, [idUser]); // Añadimos idUser como dependencia
 
+  // Función para enviar un mensaje
   const sendMessage = () => {
     if (inputMessage) {
       const messageData = {
@@ -44,7 +48,7 @@ export default function Home() {
         message: inputMessage,
         time: new Date().toLocaleTimeString(), // Hora actual
         sent: true,
-        userID: idUser
+        userID: idUser // Asigna el idUser actual al mensaje
       };
       socket.emit('send_message', messageData); // Envía el mensaje al servidor
       setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado

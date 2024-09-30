@@ -8,11 +8,11 @@ export default function Login() {
 
   async function GetNombre() {
     //Llamo a un pedido Get del servidor
-    const response = await fetch('http://localhost:4000/NombreGet',{
-        method:"GET",
-        headers: {
-            "Content-Type": "application/json",
-          },
+    const response = await fetch('http://localhost:4000/NombreGet', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     console.log(response)
@@ -24,11 +24,11 @@ export default function Login() {
 
   async function GetContraseña() {
     //Llamo a un pedido Get del servidor
-    const response = await fetch('http://localhost:4000/ContraseñaGet',{
-        method:"GET",
-        headers: {
-            "Content-Type": "application/json",
-          },
+    const response = await fetch('http://localhost:4000/ContraseñaGet', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     console.log(response)
@@ -36,52 +36,68 @@ export default function Login() {
     console.log(result)
 
     //document.getElementById("password").innerHTML = result.respuesta
-}
+  }
 
   async function login() {
-    let user = getNombre();
-    let password = GetContraseña();
+    const username = document.getElementById("mail").value;
+    const password = document.getElementById("contrasena").value;
 
-    let usuariosExistentes = await usuariosDB();
-
-    for (let i = 0; i < usuariosExistentes.length; i++) {
-      if (usuariosExistentes[i].nombre == user) {
-        if (usuariosExistentes[i].password == password) {
-          usuarioLogueadoId = usuariosExistentes[i].id_usuario;
-          changeScreen();
-          return; // Salir de la función después de un inicio de sesión exitoso
-        } else {
-          alert("La contraseña es incorrecta");
-          return; // Salir de la función después de un error de contraseña
-        }
-      }
+    if (!username || !password) {
+      alert("Please fill in both username and password");
+      return;
     }
-    // Si ningún usuario coincide, muestra el mensaje de error
-    alert("Ese usuario no existe. Inicie el registro");
+
+    try {
+      const response = await fetch('http://localhost:4000/login', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);
+        // Set the user's session here
+        // ...
+      } else {
+        alert("Invalid credentials");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function registro() {
-    let usuariosExistentes = await usuariosDB();
-    let user = getNombre();
-    let password = GetContraseña();
+    const username = document.getElementById("mail").value;
+    const password = document.getElementById("contrasena").value;
   
-    // Verificar si el usuario ya existe
-    for (let i = 0; i < usuariosExistentes.length; i++) {
-      if (user == usuariosExistentes[i].user) {
-        alert("Este usuario ya existe. Aprete el boton ingresar");
-        return;
-      }
+    if (!username || !password) {
+      alert("Please fill in both username and password");
+      return;
     }
   
-    // Si no existe, registrar nuevo usuario
-    let operacion = await registroUsuarios(user, password);
+    try {
+      const response = await fetch('http://localhost:4000/registro', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
   
-    if (operacion === true) {
-      let usuariosExistentesActual = await usuariosDB();
-      usuarioLogueadoId = usuariosExistentesActual[usuariosExistentesActual.length - 1].id_usuario;
-      changeScreen();
-    } else {
-      alert("Hubo un error en el ingreso de datos");
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);
+        // Set the user's session here
+        // ...
+        changeScreen();
+      } else {
+        alert("Error registering user");
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -105,8 +121,8 @@ export default function Login() {
                   <label className="form-label" htmlFor="typePasswordX-2">Contraseña</label>
                 </div>
 
-                <button className="btn btn-success btn-lg btn-block" type="submit" style={{margin: '10px'}} onclick={login}>Login</button>
-                <button className="btn btn-success btn-lg btn-block" type="submit" onclick={registro}>Registrarse</button>
+                <button className="btn btn-success btn-lg btn-block" type="submit" style={{ margin: '10px' }} onClick={login}>Login</button>
+                <button className="btn btn-success btn-lg btn-block" type="submit" onClick={registro}>Registrarse</button>
                 <button type="submit" onClick={GetContraseña}></button>
 
                 <hr className="my-4" />

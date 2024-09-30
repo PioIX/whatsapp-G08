@@ -15,19 +15,25 @@ const socket = io('http://localhost:4000');
 export default function Home() {
   const [messages, setMessages] = useState([]); // Estado para almacenar mensajes
   const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
-  const [idUser, setIdUser] = useLogin()
-
+  //const [idUser, setIdUser] = useLogin(); // Obtener idUser desde el hook useLogin
+  const idUser = document.cookie.match(/idUser=([^;]*)/)[1];
 
   useEffect(() => {
+    console.log(`ID de usuario en Home: ${idUser}`); // Para depuración
+
+    if (!idUser) {
+      console.error("El ID del usuario no está definido.");
+      return; // Puedes retornar un mensaje de carga o redirigir
+    }
+
     // Escuchar el evento de recibir mensaje
     socket.on('receive_message', (data) => {
+      console.log('Mensaje recibido en el cliente: ', data); // Para depuración
       const receivedMessage = {
         ...data,
-        sent: false
+        sent: data.userID === idUser // Marcar como enviado si es del usuario actual
       };
-      console.log({receivedMessage})
-      console.log(`idUser; ${idUser}`)
-      if (idUser != receivedMessage.userID) {
+      if (!receivedMessage.sent) { // Check if sent is false
         setMessages((prevMessages) => [...prevMessages, receivedMessage]);
       }
     });
@@ -35,20 +41,23 @@ export default function Home() {
     return () => {
       socket.off('receive_message'); // Limpiar el listener al desmontar
     };
-  }, []);
+  }, [idUser]);
 
   const sendMessage = () => {
-    if (inputMessage) {
+    console.log(`Intentando enviar mensaje con ID de usuario: ${idUser}`); // Para depuración
+    if (inputMessage && idUser) { // Asegúrate de que idUser esté definido
       const messageData = {
-        avatar: 'ava1-bg.webp', // Cambia esto según el usuario
+        avatar: 'ava1-bg.webp',
         message: inputMessage,
-        time: new Date().toLocaleTimeString(), // Hora actual
+        time: new Date().toLocaleTimeString(),
         sent: true,
-        userID: idUser
+        userID: idUser // Esto debería ser un valor válido
       };
       socket.emit('send_message', messageData); // Envía el mensaje al servidor
       setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado
       setInputMessage(''); // Limpia el campo de entrada
+    } else {
+      console.error("El ID del usuario o el mensaje de entrada son inválidos."); // Para depuración
     }
   };
 
@@ -62,7 +71,6 @@ export default function Home() {
                 <div className="row">
                   <div className="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
                     <div className="p-3">
-                      {/* Tu código de búsqueda y lista de chats */}
                       <div className="input-group rounded mb-3">
                         <input
                           type="search"

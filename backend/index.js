@@ -35,13 +35,14 @@ io.use((socket, next) => {
     sessionMiddleware(socket.request, {}, next);
 });
 
-// conexión de los sockets
+// Conexión de los sockets
 io.on('connection', (socket) => {
     console.log('Usuario conectado:', socket.id);
 
     socket.on('send_message', (data) => {
-        // mensaje a todos los sockets conectados
-        io.emit('receive_message', data);
+        console.log('Mensaje recibido en el servidor: ', data); // Para depuración
+        // Mensaje a todos menos al emisor
+        socket.broadcast.emit('receive_message', data);
     });
 
     socket.on('disconnect', () => {
@@ -163,23 +164,23 @@ app.get('/chats', async (req, res) => {
 
 // Ruta para enviar mensajes
 app.post('/send-message', async (req, res) => {
-	const { idchats, mensaje } = req.body;
+    const { idchats, mensaje } = req.body;
 
-	try {
-		const sql = `INSERT INTO Mensajes (idchats, mensaje) VALUES (${idchats}, ${mensaje})`;
-		const resultado = await MySQL.realizarQuery(sql, [idchats, mensaje]);
+    try {
+        const sql = `INSERT INTO Mensajes (idchats, mensaje) VALUES (?, ?)`;
+        const resultado = await MySQL.realizarQuery(sql, [idchats, mensaje]);
 
-		if (resultado.affectedRows > 0) {
-			res.status(201).json({ message: "Mensaje enviado" });
-			// mensaje a todos los usuarios conectados
-			io.emit('new-message', { idchats, mensaje });
-		} else {
-			res.status(500).json({ error: "Error al enviar el mensaje" });
-		}
-	} catch (error) {
-		console.error("Error en enviar mensaje: ", error);
-		res.status(500).json({ error: "Error interno del servidor" });
-	}
+        if (resultado.affectedRows > 0) {
+            res.status(201).json({ message: "Mensaje enviado" });
+            // Mensaje a todos los usuarios conectados
+            io.emit('new-message', { idchats, mensaje });
+        } else {
+            res.status(500).json({ error: "Error al enviar el mensaje" });
+        }
+    } catch (error) {
+        console.error("Error en enviar mensaje: ", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 });
 
 // obtener mensajes de un chat específico

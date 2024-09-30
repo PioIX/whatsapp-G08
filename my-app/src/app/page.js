@@ -1,5 +1,6 @@
 "use client";
 
+const idUser = -1
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useLogin } from '@/hooks/useLogin';
@@ -29,9 +30,9 @@ export default function Login() {
       if (response.ok) {
         const result = await response.json();
         console.log(result);
-        console.log(result.user[0].ID_Usuario)
-        setIdUser(result.user[0].ID_Usuario)
-        // Redirigir a /whatsapp
+        const idUser = result.user[0].ID_Usuario;
+        document.cookie = `idUser=${idUser}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+        window.location.href = '/whatsapp';
       } else {
         const error = await response.json();
         alert(error.error);

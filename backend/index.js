@@ -139,7 +139,7 @@ app.get('/chats', async (req, res) => {
 		const sql = `
 			SELECT ID_Usuario, Nombre 
 			FROM Usuarios 
-			WHERE ID_Usuario != ?`;
+			WHERE ID_Usuario != ${userId}`;
 		const usuarios = await MySQL.realizarQuery(sql, [userId]);
 		
 		res.json(usuarios);
@@ -150,17 +150,17 @@ app.get('/chats', async (req, res) => {
 });
 
 // Ruta para enviar mensajes
-app.post('/send-message', async (req, res) => {
-	const { idchat, mensaje } = req.body;
+/*app.post('/send-message', async (req, res) => {
+	const { idchats, mensaje } = req.body;
 
 	try {
-		const sql = `INSERT INTO Mensajes (idchat, mensaje) VALUES (?, ?)`;
-		const resultado = await MySQL.realizarQuery(sql, [idchat, mensaje]);
+		const sql = `INSERT INTO Mensajes (idchats, mensaje) VALUES (${idchats}, ${mensaje})`;
+		const resultado = await MySQL.realizarQuery(sql, [idchats, mensaje]);
 
 		if (resultado.affectedRows > 0) {
 			res.status(201).json({ message: "Mensaje enviado" });
 			// mensaje a todos los usuarios conectados
-			io.emit('new-message', { idchat, mensaje });
+			io.emit('new-message', { idchats, mensaje });
 		} else {
 			res.status(500).json({ error: "Error al enviar el mensaje" });
 		}
@@ -168,15 +168,42 @@ app.post('/send-message', async (req, res) => {
 		console.error("Error en enviar mensaje: ", error);
 		res.status(500).json({ error: "Error interno del servidor" });
 	}
+});*/
+app.post('/send-message', async (req, res) => {
+    console.log('Datos enviados:', req.body);
+    const { idchats, mensaje } = req.body;
+  
+    if (!idchats || !mensaje) {
+        return res.status(400).json({ error: "Faltan datos" });
+    }
+
+    const safeMessage = mensaje.replace(/'/g, "''");
+
+    try {
+        const sql = `INSERT INTO Mensajes (idchats, mensaje) VALUES (${idchats}, '${safeMessage}')`;
+        const resultado = await MySQL.realizarQuery(sql);
+
+        if (resultado.affectedRows > 0) {
+            res.status(201).json({ message: "Mensaje enviado" });
+            io.emit('new-message', { idchats, mensaje: safeMessage });
+        } else {
+            res.status(500).json({ error: "Error al enviar el mensaje" });
+        }
+    } catch (error) {
+        console.error("Error en enviar mensaje: ", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 });
 
+
+
 // obtener mensajes de un chat específico
-app.get('/chat/:idchat', async (req, res) => {
-	const { idchat } = req.params;
+app.get('/chat/:idchats', async (req, res) => {
+	const { idchats } = req.params;
 
 	try {
-		const sql = `SELECT * FROM Mensajes WHERE idchat = ?`;
-		const mensajes = await MySQL.realizarQuery(sql, [idchat]);
+		const sql = `SELECT * FROM Mensajes WHERE idchats = ${idchats}`;
+		const mensajes = await MySQL.realizarQuery(sql, [idchats]);
 		res.json(mensajes);
 	} catch (error) {
 		console.error("Error en obtener mensajes: ", error);

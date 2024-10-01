@@ -56,11 +56,10 @@ app.post('/login', async (req, res) => {
 
     try {
         const query = `SELECT * FROM Usuarios WHERE Nombre = '${username}' AND Contraseña = '${password}'`;
-
         const resultado = await MySQL.realizarQuery(query);
-        console.log(resultado)
-        req.session.userId = resultado.ID_Usuario;
-        console.log(req.session.userId)
+        console.log(resultado);
+        req.session.userId = resultado[0]?.ID_Usuario; // Usa el primer resultado
+        console.log(req.session.userId);
         if (resultado.length > 0) {
             res.status(200).json({ message: "Login exitoso", user: resultado });
         } else {
@@ -106,7 +105,7 @@ app.post('/registro', async (req, res) => {
 
 app.get('/NombreGet', async (req, res) => {
     try {
-        const respuesta = await MySQL.realizarQuery(`SELECT Nombre FROM Usuarios`);
+        const respuesta = await MySQL.realizarQuery("SELECT Nombre FROM Usuarios");
         res.send(respuesta);
     } catch (error) {
         console.error("Error en NombreGet: ", error);
@@ -116,8 +115,8 @@ app.get('/NombreGet', async (req, res) => {
 
 app.get('/UserIdGet', async (req, res) => {
     try {
-        console.log(`User: ${req.session.userId}`)
-        res.send({id: req.session.userId});
+        console.log(`User: ${req.session.userId}`);
+        res.send({ id: req.session.userId });
     } catch (error) {
         console.error("Error en UserIdGet: ", error);
         res.status(500).send({ error: 'Error interno del servidor' });
@@ -126,7 +125,7 @@ app.get('/UserIdGet', async (req, res) => {
 
 app.get('/ContraseñaGet', async (req, res) => {
     try {
-        const respuesta = await MySQL.realizarQuery(`SELECT Contraseña FROM Usuarios`);
+        const respuesta = await MySQL.realizarQuery("SELECT Contraseña FROM Usuarios");
         res.send(respuesta);
     } catch (error) {
         console.error("Error en ContraseñaGet: ", error);
@@ -134,63 +133,67 @@ app.get('/ContraseñaGet', async (req, res) => {
     }
 });
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// cosas de mandar mensajes y chats
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 // Ruta para obtener chats del usuario logueado
 app.get('/chats', async (req, res) => {
-	if (!req.session.userId) {
-		return res.status(401).json({ error: "No autorizado" });
-	}
-	
-	const userId = req.session.userId; // ID del usuario logeado
-
-	try {
-		// usuarios que no son el usuario logueado
-		const sql = `
-			SELECT ID_Usuario, Nombre 
-			FROM Usuarios 
-			WHERE ID_Usuario != ${userId}`;
-		const usuarios = await MySQL.realizarQuery(sql, [userId]);
-		
-		res.json(usuarios);
-	} catch (error) {
-		console.error("Error en obtener usuarios: ", error);
-		res.status(500).json({ error: "Error interno del servidor" });
-	}
-});
-
-// Ruta para enviar mensajes
-app.post('/send-message', async (req, res) => {
-    const { mensaje } = req.body;
+    if (!req.session.userId) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+  
+    const userId = req.session.userId; // ID del usuario logeado
   
     try {
-      const sql = `INSERT INTO Mensajes (mensaje) VALUES ('${mensaje}')`;
-      const resultado = await MySQL.realizarQuery(sql);
-  
-      if (resultado.affectedRows > 0) {
-        res.status(201).json({ message: "Mensaje enviado" });
-      } else {
-        res.status(500).json({ error: "Error al enviar el mensaje" });
-      }
+      // usuarios que no son el usuario logueado
+      const sql = `SELECT ID_Usuario, Nombre FROM Usuarios WHERE ID_Usuario != ${userId}`;
+      const usuarios = await MySQL.realizarQuery(sql);
+      
+      res.json(usuarios);
     } catch (error) {
-      console.error("Error en enviar mensaje: ", error);
+      console.error("Error en obtener usuarios: ", error);
       res.status(500).json({ error: "Error interno del servidor" });
     }
   });
 
+// Ruta para enviar mensajes
+app.post('/send-message', async (req, res) => {
+    const { mensaje } = req.body;
+
+    try {
+        const sql = `INSERT INTO Mensajes (mensaje) VALUES ('${mensaje}')`;
+        const resultado = await MySQL.realizarQuery(sql);
+
+        if (resultado.affectedRows > 0) {
+            res.status(201).json({ message: "Mensaje enviado" });
+        } else {
+            res.status(500).json({ error: "Error al enviar el mensaje" });
+        }
+    } catch (error) {
+        console.error("Error en enviar mensaje: ", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
 // obtener mensajes de un chat específico
 app.get('/chat/:idchats', async (req, res) => {
-	const { idchats } = req.params;
+    const { idchats } = req.params;
 
-	try {
-		const sql = `SELECT * FROM Mensajes WHERE idchats = ${idchats}`;
-		const mensajes = await MySQL.realizarQuery(sql, [idchats]);
-		res.json(mensajes);
-	} catch (error) {
-		console.error("Error en obtener mensajes: ", error);
-		res.status(500).json({ error: "Error interno del servidor" });
-	}
+    try {
+        const sql = `SELECT * FROM Mensajes WHERE idchats = ${idchats}`;
+        const mensajes = await MySQL.realizarQuery(sql);
+        res.json(mensajes);
+    } catch (error) {
+        console.error("Error en obtener mensajes: ", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+app.get('/get-chats/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const sql = `SELECT ID_Usuario, Nombre FROM Usuarios WHERE ID_Usuario != ${id}`;
+    const usuarios = await MySQL.realizarQuery(sql);
+    res.json(usuarios);
+  } catch (error) {
+    console.error("Error en obtener usuarios: ", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
 });

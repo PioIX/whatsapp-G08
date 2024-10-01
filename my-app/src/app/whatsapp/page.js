@@ -1,15 +1,99 @@
-"use client"
-//pantalla true
+"use client";
 
-import styles from "@/app/page.module.css"
-import Sidebar from "@/components/Sidebar"
-import Title from "@/components/Title"
-import React from 'react';
+import styles from "@/app/page.module.css";
+import Sidebar from "@/components/Sidebar"; // Asegúrate de tener esta importación si la necesitas
+import Title from "@/components/Title"; // Asegúrate de tener esta importación si la necesitas
+import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useLogin } from "@/hooks/useLogin"; // Asegúrate de tener esta importación si la necesitas
+
+// Conectar al servidor Socket.io
+const socket = io('http://localhost:4000');
+
 export default function Home() {
+  const [messages, setMessages] = useState([]); // Estado para almacenar mensajes
+  const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
+  const [chatList, setChatList] = useState([]); // Estado para la lista de chats
+  const [selectedUserId, setSelectedUserId] = useState(null); // Estado para el ID del usuario seleccionado
+  const userIdFromCookie = document.cookie.match(/idUser=([^;]*)/)[1];
 
+  useEffect(() => {
+    console.log(`ID de usuario en Home: ${userIdFromCookie}`); // Para depuración
 
+    if (!userIdFromCookie) {
+      console.error("El ID del usuario no está definido.");
+      return; // Puedes retornar un mensaje de carga o redirigir
+    }
+
+    // Llamar a la API para obtener la lista de chats
+    fetch(`http://localhost:4000/get-chats/${userIdFromCookie}`)
+      .then(response => response.json())
+      .then(data => {
+        setChatList(data); // Suponiendo que la respuesta es un array de chats
+        console.log('Lista de chats:', data); // Para depuración
+      })
+      .catch(error => console.error('Error al obtener la lista de chats:', error));
+
+    // Escuchar el evento de recibir mensaje
+    socket.on('receive_message', (data) => {
+      console.log('Mensaje recibido en el cliente: ', data); // Para depuración
+    
+      // Convertir IDs a números para asegurar la comparación correcta
+      const currentUserId = parseInt(userIdFromCookie, 10);
+      const messageReceiverId = parseInt(data.receiverId, 10);
+    
+      // Solo agregar el mensaje si el receiverId coincide con el userId
+      if (messageReceiverId === currentUserId) {
+        const receivedMessage = {
+          ...data,
+          sent: false 
+        };
+        setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      } else {
+        console.log('No se dibuja el mensaje: el receiverId no coincide.');
+      }
+    });
+
+    return () => {
+      socket.off('receive_message'); // Limpiar el listener al desmontar
+    };
+  }, [userIdFromCookie, selectedUserId]); // Agregar selectedUserId como dependencia
+
+  const sendMessage = () => {
+    console.log(`Intentando enviar mensaje con ID de usuario: ${userIdFromCookie}`); // Para depuración
+    if (inputMessage && userIdFromCookie && selectedUserId) { // Asegúrate de que userId y selectedUserId estén definidos
+      const messageData = {
+        avatar: 'ava1-bg.webp',
+        message: inputMessage,
+        time: new Date().toLocaleTimeString(),
+        sent: true,
+        userID: userIdFromCookie, // ID del usuario que envía el mensaje
+        receiverId: selectedUserId // ID del usuario que recibe el mensaje
+      };
+      socket.emit('send_message', messageData); // Envía el mensaje al servidor
+      setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado
+      setInputMessage(''); // Limpia el campo de entrada
+
+      // Envía una solicitud al servidor para guardar el mensaje en la base de datos
+      fetch('http://localhost:4000/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          mensaje: inputMessage,
+          receiverId: selectedUserId // Asegúrate de enviar el ID del receptor
+        })
+      })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    } else {
+      console.error("El ID del usuario o el mensaje de entrada son inválidos."); // Para depuración
+    }
+  };
 
   return (
     <section style={{ backgroundColor: '#075E54' }}>
@@ -35,48 +119,19 @@ export default function Home() {
                       </div>
                       <div style={{ position: 'relative', height: '400px', overflowY: 'auto' }}>
                         <ul className="list-unstyled mb-0">
-                          {/* Sample Chat List */}
-                          {[
-                            {
-                              name: 'Marie Horwitz',
-                              message: 'Hello, Are you there?',
-                              time: 'Just now',
-                              avatar: 'ava1-bg.webp',
-                              unread: 3,
-                            },
-                            {
-                              name: 'Alexa Chung',
-                              message: 'Lorem ipsum dolor sit.',
-                              time: '5 mins ago',
-                              avatar: 'ava2-bg.webp',
-                              unread: 2,
-                            },
-                            // Add more chat items here...
-                          ].map((chat, index) => (
-                            <li className="p-2 border-bottom" key={index}>
-                              <a href="#!" className="d-flex justify-content-between">
-                                <div className="d-flex flex-row">
-                                  <div>
-                                    <img
-                                      src={`https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/${chat.avatar}`}
-                                      alt="avatar"
-                                      className="d-flex align-self-center me-3"
-                                      width="60"
-                                    />
-                                    <span className={`badge ${chat.unread > 0 ? 'bg-danger' : 'bg-success'} badge-dot`}></span>
-                                  </div>
-                                  <div className="pt-1">
-                                    <p className="fw-bold mb-0">{chat.name}</p>
-                                    <p className="small text-muted">{chat.message}</p>
-                                  </div>
-                                </div>
-                                <div className="pt-1">
-                                  <p className="small text-muted mb-1">{chat.time}</p>
-                                  {chat.unread > 0 && (
-                                    <span className="badge bg-danger rounded-pill float-end">{chat.unread}</span>
-                                  )}
-                                </div>
-                              </a>
+                          {Array.isArray(chatList) && chatList.map((chat) => (
+                            <li key={chat.ID_Usuario}>
+                              <div
+                                className="pt-1"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  setSelectedUserId(chat.ID_Usuario); // Cambia el usuario seleccionado
+                                  setMessages([]); // Limpia los mensajes al cambiar de chat
+                                  console.log(`Clicked on ${chat.Nombre}`); // Para depuración
+                                }}
+                              >
+                                <p className="fw-bold mb-0">{chat.Nombre}</p>
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -86,22 +141,8 @@ export default function Home() {
 
                   <div className="col-md-6 col-lg-7 col-xl-8">
                     <div className="pt-3 pe-3" style={{ position: 'relative', height: '400px', overflowY: 'auto' }}>
-                      {/* Sample Chat Messages */}
-                      {[
-                        {
-                          avatar: 'ava6-bg.webp',
-                          message: 'Hola bro',
-                          time: '12:00 PM | Aug 13',
-                          sent: false,
-                        },
-                        {
-                          avatar: 'ava1-bg.webp',
-                          message: 'Hola yanfri',
-                          time: '12:00 PM | Aug 13',
-                          sent: true,
-                        },
-                        // Add more messages here...
-                      ].map((msg, index) => (
+                      {/* Muestra los mensajes */}
+                      {messages.map((msg, index) => (
                         <div className={`d-flex flex-row justify-content-${msg.sent ? 'end' : 'start'}`} key={index}>
                           {!msg.sent && (
                             <img
@@ -112,8 +153,7 @@ export default function Home() {
                           )}
                           <div>
                             <p className={`small p-2 ${msg.sent ? 'me-3' : 'ms-3'} mb-1 rounded-3`}
-                              style={{ backgroundColor: msg.sent ? '#25D366' : '#F1F0F0', color: msg.sent ? 'white' : 'black' }}
-                            >
+                              style={{ backgroundColor: msg.sent ? '#25D366' : '#F1F0F0', color: msg.sent ? 'white' : 'black' }}>
                               {msg.message}
                             </p>
                             <p className={`small ${msg.sent ? 'me-3' : 'ms-3'} mb-3 rounded-3 text-muted`}>{msg.time}</p>
@@ -132,17 +172,20 @@ export default function Home() {
                     <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
                       <img
                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlHTQ4hE8DvEq00WWWeHZJxs9IOKteXl60-w&s"
-                        alt="avatar 3"
-                        style={{ width: '40px', height: '100%' }}
+                        alt="avatar"
+                        style={{ width: '45px', height: '100%' }}
                       />
                       <input
                         type="text"
                         className="form-control form-control-lg"
-                        placeholder="Type message"
+                        placeholder="Escribe un mensaje..."
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                       />
-                      <a className="ms-1 text-muted" href="#!"><i className="fas fa-paperclip"></i></a>
-                      <a className="ms-3 text-muted" href="#!"><i className="fas fa-smile"></i></a>
-                      <a className="ms-3" href="#!"><i className="fas fa-paper-plane"></i></a>
+                      <button className="btn btn-primary" onClick={sendMessage}>
+                        Enviar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -152,5 +195,5 @@ export default function Home() {
         </div>
       </div>
     </section>
-  )
+  );
 }

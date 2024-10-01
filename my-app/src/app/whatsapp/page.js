@@ -1,8 +1,6 @@
 "use client";
 
 import styles from "@/app/page.module.css";
-import Sidebar from "@/components/Sidebar"; // Asegúrate de tener esta importación si la necesitas
-import Title from "@/components/Title"; // Asegúrate de tener esta importación si la necesitas
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -84,6 +82,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           mensaje: inputMessage,
+          Id_usuario: userIdFromCookie,
+          idchat: 1, 
           receiverId: selectedUserId // Asegúrate de enviar el ID del receptor
         })
       })

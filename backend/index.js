@@ -155,10 +155,10 @@ app.get('/chats', async (req, res) => {
 
 // Ruta para enviar mensajes
 app.post('/send-message', async (req, res) => {
-    const { mensaje } = req.body;
+    const { mensaje, Id_usuario, idchat } = req.body;
 
     try {
-        const sql = `INSERT INTO Mensajes (mensaje) VALUES ('${mensaje}')`;
+        const sql = `INSERT INTO Mensajes (mensaje, Id_user, idchats) VALUES ('${mensaje}', '${Id_usuario}', '${idchat}');`;
         const resultado = await MySQL.realizarQuery(sql);
 
         if (resultado.affectedRows > 0) {

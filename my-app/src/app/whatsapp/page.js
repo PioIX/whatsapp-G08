@@ -15,15 +15,14 @@ export default function Home() {
   const [inputMessage, setInputMessage] = useState(''); // Estado para el mensaje de entrada
   const [chatList, setChatList] = useState([]); // Estado para la lista de chats
   const [selectedUserId, setSelectedUserId] = useState(null); // Estado para el ID del usuario seleccionado
-  const [selectedGroupId, setSelectedGroupId] = useState(null); // Estado para el grupo (sala) seleccionado
-  const userIdFromCookie = document.cookie.match(/idUser=([^;]*)/)[1]; // ID del usuario logueado
+  const userIdFromCookie = document.cookie.match(/idUser=([^;]*)/)[1];
 
   useEffect(() => {
     console.log(`ID de usuario en Home: ${userIdFromCookie}`); // Para depuración
 
     if (!userIdFromCookie) {
       console.error("El ID del usuario no está definido.");
-      return;
+      return; // Puedes retornar un mensaje de carga o redirigir
     }
 
     // Llamar a la API para obtener la lista de chats
@@ -35,55 +34,47 @@ export default function Home() {
       })
       .catch(error => console.error('Error al obtener la lista de chats:', error));
 
-    // Escuchar el evento de recibir mensaje individual
+    // Escuchar el evento de recibir mensaje
     socket.on('receive_message', (data) => {
-      console.log('Mensaje recibido en el cliente: ', data);
+      console.log('Mensaje recibido en el cliente: ', data); // Para depuración
+    
+      // Convertir IDs a números para asegurar la comparación correcta
       const currentUserId = parseInt(userIdFromCookie, 10);
       const messageReceiverId = parseInt(data.receiverId, 10);
     
+      // Solo agregar el mensaje si el receiverId coincide con el userId
       if (messageReceiverId === currentUserId) {
         const receivedMessage = {
           ...data,
           sent: false 
         };
         setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      } else {
+        console.log('No se dibuja el mensaje: el receiverId no coincide.');
       }
     });
 
-    // Escuchar mensajes en el grupo seleccionado
-    socket.on('receive_group_message', (message) => {
-      console.log('Mensaje recibido en el grupo: ', message);
-      setMessages(prevMessages => [...prevMessages, message]);
-    });
-
     return () => {
-      socket.off('receive_message');
-      socket.off('receive_group_message');
+      socket.off('receive_message'); // Limpiar el listener al desmontar
     };
-  }, [userIdFromCookie, selectedUserId, selectedGroupId]);
+  }, [userIdFromCookie, selectedUserId]); // Agregar selectedUserId como dependencia
 
-  // Función para unirse a un grupo (sala)
-  const joinGroup = (groupId) => {
-    setSelectedGroupId(groupId); // Guardar el ID del grupo seleccionado
-    socket.emit('join_group', groupId); // Emitir evento para unirse a la sala del grupo
-    setMessages([]); // Limpiar mensajes al cambiar de grupo
-  };
-
-  // Función para enviar mensaje a usuario individual
   const sendMessage = () => {
-    if (inputMessage && userIdFromCookie && selectedUserId) {
+    console.log(`Intentando enviar mensaje con ID de usuario: ${userIdFromCookie}`); // Para depuración
+    if (inputMessage && userIdFromCookie && selectedUserId) { // Asegúrate de que userId y selectedUserId estén definidos
       const messageData = {
         avatar: 'ava1-bg.webp',
         message: inputMessage,
         time: new Date().toLocaleTimeString(),
         sent: true,
-        userID: userIdFromCookie,
-        receiverId: selectedUserId
+        userID: userIdFromCookie, // ID del usuario que envía el mensaje
+        receiverId: selectedUserId // ID del usuario que recibe el mensaje
       };
-      socket.emit('send_message', messageData);
-      setMessages((prevMessages) => [...prevMessages, messageData]);
-      setInputMessage('');
+      socket.emit('send_message', messageData); // Envía el mensaje al servidor
+      setMessages((prevMessages) => [...prevMessages, messageData]); // Agrega el mensaje al estado
+      setInputMessage(''); // Limpia el campo de entrada
 
+      // Envía una solicitud al servidor para guardar el mensaje en la base de datos
       fetch('http://localhost:4000/send-message', {
         method: 'POST',
         headers: {
@@ -93,32 +84,14 @@ export default function Home() {
           mensaje: inputMessage,
           Id_usuario: userIdFromCookie,
           idchat: 1, 
-          receiverId: selectedUserId
+          receiverId: selectedUserId // Asegúrate de enviar el ID del receptor
         })
       })
         .then(response => response.json())
         .then(data => console.log(data))
         .catch(error => console.error(error));
     } else {
-      console.error("El ID del usuario o el mensaje de entrada son inválidos.");
-    }
-  };
-
-  // Función para enviar mensaje a grupo (sala)
-  const sendMessageToGroup = () => {
-    if (inputMessage && selectedGroupId) {
-      const messageData = {
-        groupId: selectedGroupId,
-        userId: userIdFromCookie,
-        message: inputMessage,
-        time: new Date().toLocaleTimeString(),
-        sent: true,
-      };
-      socket.emit('send_group_message', messageData);
-      setMessages((prevMessages) => [...prevMessages, messageData]);
-      setInputMessage('');
-    } else {
-      console.error('El mensaje o el grupo seleccionado son inválidos.');
+      console.error("El ID del usuario o el mensaje de entrada son inválidos."); // Para depuración
     }
   };
 
@@ -152,12 +125,9 @@ export default function Home() {
                                 className="pt-1"
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => {
-                                  if (chat.isGroup == 1) {
-                                    joinGroup(chat.ID_Usuario); // Unirse a un grupo si es un chat grupal
-                                  } else {
-                                    setSelectedUserId(chat.ID_Usuario); // Cambia el usuario seleccionado para chat privado
-                                  }
+                                  setSelectedUserId(chat.ID_Usuario); // Cambia el usuario seleccionado
                                   setMessages([]); // Limpia los mensajes al cambiar de chat
+                                  console.log(`Clicked on ${chat.Nombre}`); // Para depuración
                                 }}
                               >
                                 <p className="fw-bold mb-0">{chat.Nombre}</p>
@@ -211,9 +181,9 @@ export default function Home() {
                         placeholder="Escribe un mensaje..."
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (selectedGroupId ? sendMessageToGroup() : sendMessage())}
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                       />
-                      <button className="btn btn-primary" onClick={selectedGroupId ? sendMessageToGroup : sendMessage}>
+                      <button className="btn btn-primary" onClick={sendMessage}>
                         Enviar
                       </button>
                     </div>

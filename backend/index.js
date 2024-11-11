@@ -92,7 +92,7 @@ app.post('/registro', async (req, res) => {
         const sql = `INSERT INTO Usuarios (Nombre, Contraseña) VALUES ('${username}', '${password}')`;
         const resultado = await MySQL.realizarQuery(sql);
 
-        if (resultado.affectedRows > 0) {
+        if (resultado.affectedRows > 0) { // el affectedrows ve cuales son los que se afectaron
             res.status(201).json({ message: "Usuario registrado exitosamente." });
         } else {
             res.status(500).json({ error: "Error al registrar usuario." });

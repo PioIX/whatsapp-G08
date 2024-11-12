@@ -231,7 +231,7 @@ app.get('/get-chats/:id', async (req, res) => {
 const DOCENTES = [
     {
         nombre: "Holi",
-        apellido: "Holi",
+        apellido: "facon",
         materia: "mate"
     }
 ];
@@ -240,7 +240,13 @@ const CURSOS = [
     apellido: "facon",
     comienzo:  "7:20",
     fin: "10:00",
-    aula: "master 1"}
+    aula: "master 1"}, 
+    
+    {id: 1,
+        apellido: "rivas",
+        comienzo:  "7:20",
+        fin: "10:00",
+        aula: "master 1"}
 ]
 
 

@@ -32,7 +32,7 @@ export default function Login() {
         console.log(result);
         const idUser = result.user[0].ID_Usuario;
         document.cookie = `idUser=${idUser}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
-        window.location.href = '/whatsapp';
+        window.location.href = '/prueba';
       } else {
         const error = await response.json();
         alert(error.error);

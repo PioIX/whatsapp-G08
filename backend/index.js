@@ -197,3 +197,69 @@ app.get('/get-chats/:id', async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const DOCENTES = [
+    {
+        nombre: "Holi",
+        apellido: "Holi",
+        materia: "mate"
+    }
+];
+const CURSOS = [
+    {id: 1,
+    apellido: "facon",
+    comienzo:  "7:20",
+    fin: "10:00",
+    aula: "master 1"}
+]
+
+
+
+
+app.get('/docentes', async (req, res) => {
+    try {
+        res.send(DOCENTES);
+    } catch (error) {
+        console.error("Error en NombreGet: ", error);
+        res.status(500).send({ error: 'Error interno del servidor' });
+    }
+});
+
+app.get('/cursos', async (req, res) => {
+    try {
+        res.send(CURSOS);
+    } catch (error) {
+        console.error("Error en NombreGet: ", error);
+        res.status(500).send({ error: 'Error interno del servidor' });
+    }
+});

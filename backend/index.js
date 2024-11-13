@@ -36,7 +36,7 @@ io.use((socket, next) => {
 });
 
 // Conexión de los sockets
-io.on('connection', (socket) => {
+/*io.on('connection', (socket) => {
     console.log('Usuario conectado:', socket.id);
 
     socket.on('send_message', (data) => {
@@ -48,7 +48,24 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('Usuario desconectado:', socket.id);
     });
-});
+});*/
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado:', socket.id);
+  
+    // Escuchar el evento `send_docente` con los datos del objeto docente
+    socket.on('send_docente', (data) => {
+      console.log('Docente recibido del cliente:', data);
+  
+      // Reenviar el objeto docente a todos los clientes conectados
+      io.emit('receive_docente', data);
+    });
+  
+    // Manejar desconexión de cliente
+    socket.on('disconnect', () => {
+      console.log('Cliente desconectado:', socket.id);
+    });
+  });
+
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -236,7 +253,8 @@ const DOCENTES = [
     }
 ];
 const CURSOS = [
-    {id: 1,
+    {
+    id: 1,
     apellido: "facon",
     comienzo:  "7:20",
     fin: "10:00",
@@ -262,10 +280,16 @@ app.get('/docentes', async (req, res) => {
 });
 
 app.get('/cursos', async (req, res) => {
+    let cursosDocente = [];
     try {
-        res.send(CURSOS);
+        for (let i = 0; i < CURSOS.length; i++) { // Cambiado a i < CURSOS.length
+            console.log(CURSOS[i]);
+            if (CURSOS[i].apellido === req.query.docente)
+                cursosDocente.push(CURSOS[i]);
+        }
+        res.send(cursosDocente); // Devolver cursos filtrados por docente
     } catch (error) {
-        console.error("Error en NombreGet: ", error);
+        console.error("Error en cursos:", error);
         res.status(500).send({ error: 'Error interno del servidor' });
     }
 });

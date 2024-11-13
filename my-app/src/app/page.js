@@ -32,7 +32,7 @@ export default function Login() {
         console.log(result);
         const idUser = result.user[0].ID_Usuario;
         document.cookie = `idUser=${idUser}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
-        window.location.href = '/prueba';
+        window.location.href = '/prueba-socket';
       } else {
         const error = await response.json();
         alert(error.error);
@@ -45,7 +45,7 @@ export default function Login() {
   useEffect(() => {
     if (idUser) {
       console.log('ID del usuario actualizado:', idUser);
-      window.location.href = '/whatsapp';
+      window.location.href = '/prueba-socket';
     }
   }, [idUser]);
   

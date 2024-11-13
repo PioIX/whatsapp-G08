@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from "react";
 import Docente from "@/components/Docente";
 import Clase from "@/components/Clase";
+import { useSocket } from "@/hooks/useSocket";
 
 export default function Prueba() {
     const [docentes, setDocentes] = useState([]); // Cambié el nombre a "docentes" para mayor claridad
     const [horario, setHorario] = useState([]); // Solo un horario, ya que solo queremos el primero
     const [apellidoDocente, setApellidoDocente] = useState(""); // Estado para el input
+    const {socket, isConnected} = useSocket();
 
     // Función para obtener el listado de docentes
     useEffect(() => {
@@ -23,6 +25,19 @@ export default function Prueba() {
         };
         obtenerListado();
     }, []);
+
+    useEffect(() => {
+        if (!socket)
+            return;
+
+        socket.on('receive_docente', (data) => {
+            console.log('Objeto recibido en el cliente: ', data); // Para depuración
+            // Convertir IDs a números para asegurar la comparación correcta
+            const nombrerecive = data.nombre;
+            const apellidorecive = data.apellido;   
+            const materiarecive = data.materia;
+        });
+    }, [socket, isConnected])
 
     // Función para buscar el horario del docente
     const buscarHorario = () => {
@@ -45,7 +60,19 @@ export default function Prueba() {
         const valor = event.target.value;
         setApellidoDocente(valor); // Actualiza el valor localmente.
       }
-
+      
+      
+        // Solo agregar el mensaje si el receiverId coincide con el userId
+        /*if (messageReceiverId === currentUserId) {
+          const receivedMessage = {
+            ...data,
+            sent: false 
+          };
+          setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+        } else {
+          console.log('No se dibuja el mensaje: el receiverId no coincide.');
+        }*/
+  
     return (
         <>
             <h1>Prueba</h1>
@@ -56,9 +83,9 @@ export default function Prueba() {
           ))
     }
 
-    <input type="text" placeholder="Apellido" onChange={ponerApellido}></input>
-    <button onClick={buscarHorario}>Buscar Horarios de: {apellidoDocente}</button>
-    <p>Apellido del Docente: {apellidoDocente}</p>
+            <input type="text" placeholder="Apellido" onChange={ponerApellido}></input>
+            <button onClick={buscarHorario}>Buscar Horarios de: {apellidoDocente}</button>
+            <p>Apellido del Docente: {apellidoDocente}</p>
 
     { 
         horario.length > 0 &&

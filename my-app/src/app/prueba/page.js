@@ -127,6 +127,13 @@ export default function Prueba() {
     );
 }
 
+<Clase 
+    id="clase-facon-001"
+    inicio="08:00"      
+    fin="09:30"         
+    aula="Aula 101"     
+/>
+
 /**
  * Pregunta Teórica:
  * Convención de nomenclatura en React:

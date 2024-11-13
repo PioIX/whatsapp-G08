@@ -1,3 +1,40 @@
+/*
+La funcionalidad principal de este componente es mostrar una lista de docentes y permitir la búsqueda del horario de un docente específico, todo 
+conectado a un backend que proporciona los datos necesarios.
+
+1. **Estados Locales (`useState`)**:
+   - `docentes`: Almacena la lista de docentes obtenida desde el backend.
+   - `horario`: Guarda el horario del docente buscado, si está disponible.
+   - `apellidoDocente`: Almacena el apellido del docente ingresado por el usuario para la búsqueda.
+   - `cargando`: Indica si la aplicación está en estado de carga (cuando se hace una solicitud al backend).
+
+2. **Obtener la Lista de Docentes**:
+   - Al montar el componente, el `useEffect` ejecuta la función `obtenerListado`, que hace una solicitud 
+     al backend para obtener la lista completa de docentes. 
+   - Los datos recibidos se guardan en el estado `docentes` y, mientras la solicitud está en curso, el estado 
+     `cargando` se establece en `true` para mostrar un indicador de carga en la interfaz.
+
+3. **Buscar el Horario de un Docente**:
+   - La función `buscarHorario` envía una solicitud al backend usando el valor de `apellidoDocente` como 
+     parámetro para encontrar el horario de clases de un docente específico.
+   - Si la respuesta contiene datos, el primer horario encontrado se almacena en `horario`. Si no hay horarios 
+     disponibles, `horario` se establece en `null`.
+
+4. **Actualización del Apellido de Docente**:
+   - La función `ponerApellido` captura el valor ingresado en el campo de texto (apellido del docente) y lo 
+     guarda en `apellidoDocente`, permitiendo que el valor esté disponible para la búsqueda.
+
+5. **Renderización de la Interfaz**:
+   - Muestra la lista de docentes utilizando el componente `Docente` para cada elemento en `docentes`.
+   - Incluye un campo de texto y un botón que permiten al usuario buscar el horario de un docente específico.
+   - Si `cargando` es `true`, muestra un mensaje de carga para el usuario.
+   - Si `horario` contiene información, muestra los detalles del horario usando el componente `Clase`.
+
+Este diseño modular, que usa componentes como `Docente` y `Clase`, permite mantener el código organizado y 
+facilita la reutilización en otros contextos. Además, el uso de `useEffect` para la carga inicial y `useState`
+para el manejo del estado proporcionan una experiencia de usuario fluida.
+*/
+
 "use client";
 import React, { useEffect, useState } from "react";
 import Docente from "@/components/Docente";

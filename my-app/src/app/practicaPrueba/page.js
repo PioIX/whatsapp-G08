@@ -1,3 +1,52 @@
+/*
+Este código implementa una interfaz de usuario en React que muestra una lista de deportistas,
+obteniendo sus datos desde un backend. Utiliza los hooks `useState` y `useEffect` para manejar 
+el estado y el ciclo de vida del componente principal `Practica`.
+
+Explicación detallada:
+1. Componente `Deportista`: 
+   - Recibe dos props (`nombre` y `foto`) y los renderiza, mostrando el nombre en un párrafo
+     y la foto en una etiqueta `<img>`.
+
+2. Componente `Practica`:
+   - Define el estado `deportistas` para almacenar la lista de deportistas obtenida desde el backend.
+   - La función `buscarDeportistas` realiza una solicitud HTTP GET al backend para obtener los datos 
+     de los deportistas. Si la solicitud es exitosa, los datos en JSON se guardan en el estado `deportistas`.
+   - El `useEffect` llama a `buscarDeportistas` cuando el componente se monta, iniciando la carga de datos.
+   - Luego, el componente renderiza un título y mapea la lista de deportistas, pasando cada uno como props 
+     al componente `Deportista`.
+
+3. Backend (explicado en la sección de código correspondiente):
+   - La función `obtenerDeportistas` en el backend gestiona la solicitud para obtener datos desde una base de datos.
+   - Realiza una consulta a la base de datos para obtener la lista de deportistas, y responde en formato JSON,
+     enviando los datos al frontend para ser mostrados en la interfaz de usuario.
+*/
+
+/* 
+Explicación de `useEffect`, `useState` y `map`:
+
+1. `useState`:
+   - Es un hook en React que permite manejar el estado dentro de un componente funcional.
+   - Recibe un valor inicial y devuelve un array con dos elementos: el estado actual y una función para actualizarlo.
+   - En este código, `useState` se usa para crear el estado `deportistas`, que almacena la lista de deportistas 
+     obtenida del backend, permitiendo que se reactive el componente al cambiar el estado.
+
+2. `useEffect`:
+   - Es un hook que permite realizar efectos secundarios en componentes funcionales.
+   - Ejecuta una función después de que el componente ha sido renderizado. Al recibir un array de dependencias,
+     `useEffect` controla cuándo debe ejecutarse la función: 
+     - Un array vacío (`[]`) ejecuta el efecto solo una vez, al montar el componente.
+   - En este código, `useEffect` llama a la función `buscarDeportistas` solo una vez al cargar el componente, 
+     para hacer la solicitud al backend y llenar el estado `deportistas`.
+
+3. `map`:
+   - Es un método de arrays en JavaScript que permite transformar y recorrer cada elemento de un array,
+     devolviendo un nuevo array con los elementos transformados.
+   - Aquí, `map` se usa para iterar sobre `deportistas`, creando un componente `Deportista` para cada elemento,
+     pasando `nombre` y `foto` como props, y asegurando que cada elemento tenga una `key` única para optimizar 
+     la renderización en React.
+*/
+
 import { useState, useEffect } from "react";
 
 // Recibe las props 'nombre' y 'foto' de un deportista y las muestra en la interfaz de usuario.
